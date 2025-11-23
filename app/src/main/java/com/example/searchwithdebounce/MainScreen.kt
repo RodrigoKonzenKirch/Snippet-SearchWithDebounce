@@ -1,9 +1,15 @@
 package com.example.searchwithdebounce
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,24 +28,60 @@ fun MainScreen(
     )
 ) {
 
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         val query by viewModel.searchQuery.collectAsState()
-
         val results by viewModel.searchResults.collectAsState()
+        val isSearching = query.isNotEmpty()
 
-        Text("Search for cities")
-        // Input
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().padding(32.dp),
-            value = query,
-            onValueChange = viewModel::onSearchQueryChanged,
+        Text(
+            text = "Search for cities",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 32.dp)
         )
 
-        // show result list
-        LazyColumn {
-            items(results.size) { index ->
-                Text(text = results[index].city)
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            value = query,
+            onValueChange = viewModel::onSearchQueryChanged,
+            label = { Text("City name") },
+            singleLine = true
+        )
+
+        if (isSearching && results.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No results found")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(results.size) { index ->
+                    CityItem(item = results[index])
+                }
             }
         }
+    }
+}
+
+@Composable
+fun CityItem(
+    modifier: Modifier = Modifier,
+    item: Item
+) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = item.city,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
